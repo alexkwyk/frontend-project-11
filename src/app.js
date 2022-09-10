@@ -37,6 +37,11 @@ export default async (i18nInstance) => {
         watchedState.rssForm.state = 'valid';
         e.target.reset();
         e.target.elements.url.focus();
+        const parser = new DOMParser();
+        Promise.resolve(fetch(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(inputURL)}`)
+          .then((response) => response.json())
+          .then((data) => data.contents)
+          .then((content) => parser.parseFromString(content, 'text/html')));
       })
       .catch((err) => {
         watchedState.rssForm.error = err.message;
