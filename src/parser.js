@@ -1,8 +1,8 @@
 const parseToHTML = (data) => {
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data, 'application/xml');
-  const errorNode = document.querySelector('parsererror');
-  if (errorNode) throw new Error(errorNode.textContent);
+  const errorNode = parsedData.querySelector('parsererror');
+  if (errorNode) throw new Error('Ресурс не содержит валидный RSS');
   return parsedData;
 };
 
