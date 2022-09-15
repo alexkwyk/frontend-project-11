@@ -12,17 +12,17 @@ const renderPosts = (state, elements) => {
   card.append(cardBody);
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
-  const postsElements = state.rssForm.posts.map((post) => {
+  const postsElements = state.posts.map((post) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'aling-items-start', 'border-0', 'border-end-0');
     const a = document.createElement('a');
-    a.href = post.link;
+    a.setAttribute('href', post.link);
     a.classList.add('fw-bold');
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
     a.textContent = post.title;
     const button = document.createElement('button');
-    button.type = 'button';
+    button.setAttribute('type', 'button');
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
     button.dataset.bsToggle = 'modal';
     button.dataset.bsTarget = '#modal';
@@ -47,7 +47,7 @@ const renderFeeds = (state, elements) => {
   card.append(cardBody);
   const ul = document.createElement('ul');
   ul.classList.add('list-group', 'border-0', 'rounded-0');
-  const feedsElements = state.rssForm.feeds.map((feed) => {
+  const feedsElements = state.feeds.map((feed) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');
     const h3 = document.createElement('h3');
@@ -64,7 +64,7 @@ const renderFeeds = (state, elements) => {
   elements.feeds.append(card);
 };
 
-export default (state) => {
+export default (state, i18nInstance) => {
   const elements = {
     input: document.querySelector('#url-input'),
     outputText: document.querySelector('.feedback'),
@@ -73,18 +73,18 @@ export default (state) => {
   };
 
   const watchedState = onChange(state, (path, value) => {
-    if (path === 'rssForm.state') {
+    if (path === 'state') {
       if (value === 'failed') {
         elements.input.classList.add('is-invalid');
-        watchedState.rssForm.state = 'rendered';
-        elements.outputText.textContent = watchedState.rssForm.error;
+        watchedState.state = 'rendered';
+        elements.outputText.textContent = watchedState.error;
         elements.outputText.classList.remove('text-success');
         elements.outputText.classList.add('text-danger');
       }
       if (value === 'valid') {
         elements.input.classList.remove('is-invalid');
-        watchedState.rssForm.state = 'rendered';
-        elements.outputText.textContent = watchedState.rssForm.successMessage;
+        watchedState.state = 'rendered';
+        elements.outputText.textContent = i18nInstance.t('success');
         elements.outputText.classList.remove('text-danger');
         elements.outputText.classList.add('text-success');
         elements.posts.innerHTML = '';
