@@ -22,9 +22,8 @@ const getFeedsPostsFromURL = (url) => fetch(`https://allorigins.hexlet.app/get?d
 export default async (i18nInstance) => {
   const intialState = {
     state: 'intial',
-    links: [],
     error: '',
-    successMessage: i18nInstance.t('success'),
+    links: [],
     feeds: [],
     posts: [],
   };
