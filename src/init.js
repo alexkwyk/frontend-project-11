@@ -4,7 +4,7 @@ import app from './app.js';
 const resources = {
   ru: {
     translation: {
-      invalidUrl: 'Ссылка должна быть валидным URL',
+      invalidUrl: 'Ресурс не содержит валидный RSS',
       duplicate: 'RSS уже существует',
       success: 'RSS успешно загружен',
     },
