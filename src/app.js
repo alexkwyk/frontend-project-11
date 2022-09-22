@@ -14,7 +14,7 @@ const setIds = (data) => {
 const getFeedsPostsFromURL = (url) => fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
   .then((response) => response.json())
   .catch(() => {
-    throw new Error('Ошибка сети');
+    throw new Error('networkError');
   })
   .then((responseData) => parse(responseData.contents))
   .then((parsedData) => setIds(parsedData))
@@ -36,11 +36,11 @@ export default async (i18nInstance) => {
 
   yup.setLocale({
     mixed: {
-      notOneOf: i18nInstance.t('duplicate'),
+      notOneOf: 'duplicate',
       required: 'required',
     },
     string: {
-      url: i18nInstance.t('invalidUrl'),
+      url: 'invalidUrl',
     },
   });
 
@@ -85,12 +85,7 @@ export default async (i18nInstance) => {
             const { feedId } = state.feeds[index];
             const filteredPosts = state.posts.filter((post) => post.feedId === feedId);
             const currentNewPosts = _.differenceBy(response.posts, filteredPosts, 'title')
-              .map((post) => {
-                const newPost = post;
-                newPost.feedId = feedId;
-                newPost.id = _.uniqueId();
-                return newPost;
-              });
+              .map((post) => ({ feedId, id: _.uniqueId, ...post }));
             if (currentNewPosts.length > 0) {
               state.posts.unshift(...currentNewPosts);
               state.state = 'loading';
