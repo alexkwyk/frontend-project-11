@@ -13,10 +13,13 @@ const setIds = (data) => {
 
 const getFeedsPostsFromURL = (url) => fetch(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
   .then((response) => response.json())
-  .then((responseData) => parse(responseData.contents))
-  .then((parsedData) => setIds(parsedData))
   .catch(() => {
     throw new Error('Ошибка сети');
+  })
+  .then((responseData) => parse(responseData.contents))
+  .then((parsedData) => setIds(parsedData))
+  .catch((e) => {
+    throw new Error(e.message);
   });
 
 export default async (i18nInstance) => {
