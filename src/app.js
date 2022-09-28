@@ -34,25 +34,22 @@ const getFeedsPostsFromURL = (link) => axios.get(generateURL(link))
   });
 
 export default () => {
-  const createi18nextInstance = (lng = 'ru') => {
-    const i18nextInstance = i18next.createInstance();
-    Promise.resolve(i18nextInstance.init({
-      lng,
-      resources: { ru },
-    }));
-    return i18nextInstance;
-  };
-  const i18nextInstance = createi18nextInstance();
-
   const intialState = {
     state: 'intial',
     error: '',
     links: [],
     feeds: [],
     posts: [],
-    readPosts: [],
-    modalPost: '',
+    readPostsIds: new Set(),
+    modalPost: {},
   };
+
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
+    lng: 'ru',
+    resources: { ru },
+  });
+
   const state = view(intialState, i18nextInstance);
 
   yup.setLocale({
@@ -68,7 +65,6 @@ export default () => {
   const schema = yup.string().url().required();
 
   const form = document.querySelector('form.rss-form');
-  const postsContainer = document.querySelector('.posts');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const inputURL = (e.target.elements.url.value).trim();
@@ -82,8 +78,6 @@ export default () => {
         state.feeds.unshift(normalizedData.feed);
         state.posts.unshift(...normalizedData.posts);
         state.links.unshift(inputURL);
-        e.target.reset();
-        e.target.elements.url.focus();
         state.state = 'loaded';
       })
       .catch((err) => {
@@ -92,37 +86,34 @@ export default () => {
       });
   });
 
+  const postsContainer = document.querySelector('.posts');
   postsContainer.addEventListener('click', (e) => {
     const { id } = e.target.dataset;
     if (!id) return;
-    state.readPosts.push(id);
-    state.modalPost = id;
+    state.readPostsIds.add(id);
+    const { title, description, link } = state.posts.filter((item) => item.id === id)[0];
+    state.modalPost = { title, description, link };
   });
 
   const checkForNewPosts = () => {
-    const run = () => {
-      const promises = state.links
-        .map((link, index) => getFeedsPostsFromURL(link)
-          .then((response) => {
-            const { feedId } = state.feeds[index];
-            const filteredPosts = state.posts.filter((post) => post.feedId === feedId);
-            const currentNewPosts = _.differenceBy(response.posts, filteredPosts, 'title')
-              .map((post) => ({ feedId, id: _.uniqueId, ...post }));
-            if (currentNewPosts.length > 0) {
-              state.posts.unshift(...currentNewPosts);
-              state.state = 'loaded';
-            }
-          })
-          .catch((err) => {
-            state.error = err.message;
-            state.state = 'failed';
-            throw new Error(err.message);
-          }));
-      Promise.all(promises).finally(() => setTimeout(run, 5000));
-    };
-
-    setTimeout(run, 5000);
+    const promises = state.links
+      .map((link, index) => getFeedsPostsFromURL(link)
+        .then((response) => {
+          const { feedId } = state.feeds[index];
+          const filteredPosts = state.posts.filter((post) => post.feedId === feedId);
+          const currentNewPosts = _.differenceBy(response.posts, filteredPosts, 'title')
+            .map((post) => ({ feedId, id: _.uniqueId, ...post }));
+          if (currentNewPosts.length > 0) {
+            state.posts.unshift(...currentNewPosts);
+            state.state = 'loaded';
+          }
+        })
+        .catch((err) => {
+          state.error = err.message;
+          state.state = 'failed';
+          throw new Error(err.message);
+        }));
+    Promise.all(promises).finally(() => setTimeout(checkForNewPosts, 5000));
   };
-
-  checkForNewPosts();
+  setTimeout(checkForNewPosts, 5000);
 };
